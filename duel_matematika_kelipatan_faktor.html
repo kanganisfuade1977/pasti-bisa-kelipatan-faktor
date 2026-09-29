@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DUEL MATEMATIKA: Kelipatan & Faktor Challenge!</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts: Fredoka & Nunito for friendly rounded text -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        nunito: ['Nunito', 'sans-serif'],
+                    },
+                    colors: {
+                        p1Primary: '#FF4757',
+                        p1Secondary: '#FF6B81',
+                        p2Primary: '#1E90FF',
+                        p2Secondary: '#70A1FF',
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 2s infinite',
+                        'pulse-fast': 'pulse 1s infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        /* Glassmorphism & Custom 3D Button Shadows */
+        .btn-3d-green {
+            background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%);
+            box-shadow: 0px 6px 0px #1e8449, 0px 10px 15px rgba(0,0,0,0.2);
+            transition: all 0.1s ease;
+        }
+        .btn-3d-green:active {
+            transform: translateY(4px);
+            box-shadow: 0px 2px 0px #1e8449, 0px 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .btn-3d-blue {
+            background: linear-gradient(180deg, #3498db 0%, #2980b9 100%);
+            box-shadow: 0px 6px 0px #1c5980, 0px 10px 15px rgba(0,0,0,0.2);
+            transition: all 0.1s ease;
+        }
+        .btn-3d-blue:active {
+            transform: translateY(4px);
+            box-shadow: 0px 2px 0px #1c5980, 0px 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .btn-3d-red {
+            background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
+            box-shadow: 0px 6px 0px #962d22, 0px 10px 15px rgba(0,0,0,0.2);
+            transition: all 0.1s ease;
+        }
+        .btn-3d-red:active {
+            transform: translateY(4px);
+            box-shadow: 0px 2px 0px #962d22, 0px 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .btn-3d-yellow {
+            background: linear-gradient(180deg, #f1c40f 0%, #f39c12 100%);
+            box-shadow: 0px 6px 0px #d68910, 0px 10px 15px rgba(0,0,0,0.2);
+            transition: all 0.1s ease;
+        }
+        .btn-3d-yellow:active {
+            transform: translateY(4px);
+            box-shadow: 0px 2px 0px #d68910, 0px 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .card-3d {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Confetti Canvas Overlay */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .speech-bubble {
+            position: relative;
+            background: #ffffff;
+            border-radius: 1.25rem;
+            border: 3px solid #4B5563;
+        }
+        .speech-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            border-width: 15px 15px 0;
+            border-style: solid;
+            border-color: #ffffff transparent;
+            display: block;
+            width: 0;
+            margin-left: -15px;
+        }
+
+        /* Hide scrollbars for crisp game UI */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-800 text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden select-none">
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Top Global Header -->
+    <header class="w-full bg-slate-900/80 backdrop-blur-md border-b-4 border-yellow-400 py-2 px-4 flex justify-between items-center z-20 text-white shadow-lg">
+        <div class="flex items-center gap-2">
+            <div class="bg-yellow-400 text-slate-900 p-2 rounded-xl text-xl font-black shadow-inner">🧮</div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-yellow-300 tracking-wide uppercase leading-none">DUEL MATEMATIKA</h1>
+                <p class="text-xs text-slate-300 font-semibold">Kelipatan & Faktor Challenge!</p>
+            </div>
+        </div>
+
+        <!-- Floating Commentator Box -->
+        <div class="hidden md:flex items-center gap-3 bg-white/10 px-4 py-1.5 rounded-full border border-white/20">
+            <div class="relative">
+                <div class="w-10 h-10 rounded-full bg-yellow-400 flex items-center justify-center text-xl border-2 border-white shadow">🎤</div>
+                <span class="absolute -bottom-1 -right-1 bg-green-500 w-3.5 h-3.5 rounded-full border-2 border-slate-900"></span>
+            </div>
+            <div class="text-xs">
+                <span class="block font-black text-yellow-300">ANIS FUAD <span class="text-[10px] text-slate-300 font-normal">(Komentator Kelas 4B)</span></span>
+                <span id="commentator-text" class="italic text-slate-100 font-medium">"Siapa yang paling cepat dan tepat?"</span>
+            </div>
+        </div>
+
+        <button id="sound-toggle" onclick="toggleAudio()" class="bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-xl border-2 border-slate-400 flex items-center gap-2 font-bold text-xs transition">
+            <span id="sound-icon">🔊</span> <span id="sound-label">Suara: ON</span>
+        </button>
+    </header>
+
+    <!-- Main Container Screen Holder -->
+    <main id="app-container" class="flex-1 flex flex-col justify-center items-center p-2 sm:p-4 z-10">
+
+        <!-- SCREEN 1: WELCOME & PLAYER SETUP -->
+        <div id="screen-setup" class="w-full max-w-4xl bg-white/95 rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-yellow-400 text-center animate-float">
+            <div class="inline-block bg-yellow-400 text-slate-900 px-4 py-1 rounded-full font-black text-sm uppercase tracking-wider mb-2">
+                ⚡ Mode 1 VS 1 Local Duel ⚡
+            </div>
+            <h2 class="text-3xl sm:text-5xl font-black text-slate-900 mb-2">SIAPA PALING CEPAT & TEPAT?</h2>
+            <p class="text-slate-600 font-bold mb-6 text-sm sm:text-base">Masukkan nama kamu dan temanmu untuk mulai bertanding!</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Player 1 Card Setup -->
+                <div class="bg-red-50 border-4 border-red-400 rounded-2xl p-5 shadow-md flex flex-col items-center">
+                    <div class="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center text-4xl shadow-lg border-4 border-white mb-3">👦</div>
+                    <span class="bg-red-500 text-white px-3 py-0.5 rounded-full font-black text-xs mb-3">PEMAIN 1 (SISI KIRI)</span>
+                    <label class="w-full text-left font-extrabold text-slate-700 text-xs mb-1">Nama Pemain 1:</label>
+                    <input type="text" id="p1-name-input" value="Budi" maxlength="12" class="w-full text-center text-lg font-black bg-white border-2 border-red-300 rounded-xl py-2 px-3 focus:outline-none focus:border-red-500 shadow-inner" placeholder="Ketik Nama...">
+                </div>
+
+                <!-- Player 2 Card Setup -->
+                <div class="bg-blue-50 border-4 border-blue-400 rounded-2xl p-5 shadow-md flex flex-col items-center">
+                    <div class="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center text-4xl shadow-lg border-4 border-white mb-3">👧</div>
+                    <span class="bg-blue-500 text-white px-3 py-0.5 rounded-full font-black text-xs mb-3">PEMAIN 2 (SISI KANAN)</span>
+                    <label class="w-full text-left font-extrabold text-slate-700 text-xs mb-1">Nama Pemain 2:</label>
+                    <input type="text" id="p2-name-input" value="Siti" maxlength="12" class="w-full text-center text-lg font-black bg-white border-2 border-blue-300 rounded-xl py-2 px-3 focus:outline-none focus:border-blue-500 shadow-inner" placeholder="Ketik Nama...">
+                </div>
+            </div>
+
+            <button onclick="goToLevelSelect()" class="btn-3d-green text-white text-2xl font-black py-4 px-10 rounded-2xl w-full sm:w-auto tracking-wide shadow-xl flex items-center justify-center gap-3 mx-auto">
+                🚀 MULAI DUEL!
+            </button>
+        </div>
+
+        <!-- SCREEN 2: LEVEL SELECTION -->
+        <div id="screen-level" class="hidden w-full max-w-3xl bg-white/95 rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-yellow-400 text-center">
+            <h2 class="text-3xl font-black text-slate-900 mb-1">🎯 PILIH TINGKAT KESULITAN</h2>
+            <p class="text-slate-600 font-bold mb-6 text-sm">Setiap level berisi 10 soal unik untuk masing-masing pemain!</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <!-- Level Easy -->
+                <button onclick="startMatch('easy')" class="btn-3d-green p-5 rounded-2xl text-white flex flex-col items-center justify-center group">
+                    <span class="text-4xl mb-2 group-hover:scale-110 transition">🟢</span>
+                    <span class="text-2xl font-black">LEVEL MUDAH</span>
+                    <span class="text-xs font-semibold opacity-90 mt-1">Kelipatan & Faktor Sederhana</span>
+                </button>
+
+                <!-- Level Medium -->
+                <button onclick="startMatch('medium')" class="btn-3d-blue p-5 rounded-2xl text-white flex flex-col items-center justify-center group">
+                    <span class="text-4xl mb-2 group-hover:scale-110 transition">🔵</span>
+                    <span class="text-2xl font-black">LEVEL SEDANG</span>
+                    <span class="text-xs font-semibold opacity-90 mt-1">Pembandingan & Soal Cerita</span>
+                </button>
+
+                <!-- Level Hard -->
+                <button onclick="startMatch('hard')" class="btn-3d-red p-5 rounded-2xl text-white flex flex-col items-center justify-center group">
+                    <span class="text-4xl mb-2 group-hover:scale-110 transition">🔴</span>
+                    <span class="text-2xl font-black">LEVEL SULIT</span>
+                    <span class="text-xs font-semibold opacity-90 mt-1">Persekutuan & Penalaran</span>
+                </button>
+            </div>
+
+            <button onclick="showScreen('screen-setup')" class="text-slate-500 hover:text-slate-800 font-extrabold text-sm underline">
+                ⬅️ Kembali ke Input Nama
+            </button>
+        </div>
+
+        <!-- SCREEN 3: 1 VS 1 GAME ARENA -->
+        <div id="screen-game" class="hidden w-full h-[calc(100vh-80px)] flex flex-col justify-between">
+            
+            <!-- Center Timer & Level Status Bar -->
+            <div class="w-full bg-slate-900/90 text-white rounded-2xl p-2 mb-2 flex justify-between items-center border-2 border-yellow-400 px-4 shadow-md">
+                <div class="flex items-center gap-2">
+                    <span id="game-level-badge" class="bg-green-500 text-white text-xs font-black px-2.5 py-1 rounded-full uppercase">LEVEL MUDAH</span>
+                    <span id="game-soal-num" class="text-xs font-extrabold text-yellow-300">Soal 1 / 10</span>
+                </div>
+
+                <!-- Central Countdown Timer -->
+                <div class="flex items-center gap-2 bg-slate-800 px-4 py-1 rounded-full border border-yellow-400/50">
+                    <span class="text-xl">⏰</span>
+                    <span id="central-timer" class="text-2xl font-black text-yellow-400 font-mono">20</span>
+                    <span class="text-xs font-bold text-slate-300">detik</span>
+                </div>
+
+                <button onclick="confirmExit()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-black px-3 py-1 rounded-lg border border-red-300">
+                    🏳️ MENU
+                </button>
+            </div>
+
+            <!-- Vertical Split Screen Area (Left P1, Right P2) -->
+            <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3 h-full overflow-hidden">
+                
+                <!-- SISI KIRI: PEMAIN 1 -->
+                <div id="p1-panel" class="bg-white/95 rounded-2xl border-4 border-red-500 p-3 sm:p-4 flex flex-col justify-between shadow-xl relative overflow-hidden transition-all">
+                    <!-- Player Header Info -->
+                    <div class="flex justify-between items-center border-b-2 border-red-200 pb-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-xl text-white shadow">👦</div>
+                            <div>
+                                <div id="p1-display-name" class="font-black text-red-600 text-sm md:text-base leading-none">PEMAIN 1</div>
+                                <div class="text-[10px] text-slate-500 font-bold">Sisi Kiri</div>
+                            </div>
+                        </div>
+                        <div class="bg-yellow-100 border-2 border-yellow-400 rounded-xl px-3 py-1 flex items-center gap-1 shadow-sm">
+                            <span class="text-lg">⭐</span>
+                            <span id="p1-score" class="font-black text-xl text-slate-800">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Question Canvas / Board -->
+                    <div class="my-2 bg-slate-900 text-white rounded-xl p-3 md:p-4 border-2 border-slate-700 min-h-[110px] flex flex-col justify-center items-center text-center relative shadow-inner">
+                        <span class="absolute top-1 left-2 text-[10px] text-slate-400 font-mono">SOAL P1</span>
+                        <p id="p1-question-text" class="text-base sm:text-lg font-bold text-yellow-300 leading-snug">
+                            Loading Soal Pemain 1...
+                        </p>
+                    </div>
+
+                    <!-- Answer Feedback Overlay Badge -->
+                    <div id="p1-feedback" class="hidden absolute inset-0 bg-slate-900/90 z-20 flex flex-col items-center justify-center text-white rounded-xl p-4 transition-all">
+                        <div id="p1-feedback-emoji" class="text-6xl animate-bounce mb-2">🎉</div>
+                        <div id="p1-feedback-title" class="text-3xl font-black text-yellow-300 mb-1">WAW..!</div>
+                        <div id="p1-feedback-sub" class="text-sm font-extrabold text-slate-200">Jawaban Kamu Benar! (+10)</div>
+                    </div>
+
+                    <!-- Options Grid -->
+                    <div id="p1-options-container" class="grid grid-cols-2 gap-2 mt-auto">
+                        <!-- 4 Option Buttons populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- SISI KANAN: PEMAIN 2 -->
+                <div id="p2-panel" class="bg-white/95 rounded-2xl border-4 border-blue-500 p-3 sm:p-4 flex flex-col justify-between shadow-xl relative overflow-hidden transition-all">
+                    <!-- Player Header Info -->
+                    <div class="flex justify-between items-center border-b-2 border-blue-200 pb-2">
+                        <div class="flex items-center gap-2">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-xl text-white shadow">👧</div>
+                            <div>
+                                <div id="p2-display-name" class="font-black text-blue-600 text-sm md:text-base leading-none">PEMAIN 2</div>
+                                <div class="text-[10px] text-slate-500 font-bold">Sisi Kanan</div>
+                            </div>
+                        </div>
+                        <div class="bg-yellow-100 border-2 border-yellow-400 rounded-xl px-3 py-1 flex items-center gap-1 shadow-sm">
+                            <span class="text-lg">⭐</span>
+                            <span id="p2-score" class="font-black text-xl text-slate-800">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Question Canvas / Board -->
+                    <div class="my-2 bg-slate-900 text-white rounded-xl p-3 md:p-4 border-2 border-slate-700 min-h-[110px] flex flex-col justify-center items-center text-center relative shadow-inner">
+                        <span class="absolute top-1 left-2 text-[10px] text-slate-400 font-mono">SOAL P2</span>
+                        <p id="p2-question-text" class="text-base sm:text-lg font-bold text-cyan-300 leading-snug">
+                            Loading Soal Pemain 2...
+                        </p>
+                    </div>
+
+                    <!-- Answer Feedback Overlay Badge -->
+                    <div id="p2-feedback" class="hidden absolute inset-0 bg-slate-900/90 z-20 flex flex-col items-center justify-center text-white rounded-xl p-4 transition-all">
+                        <div id="p2-feedback-emoji" class="text-6xl animate-bounce mb-2">🎉</div>
+                        <div id="p2-feedback-title" class="text-3xl font-black text-yellow-300 mb-1">WAW..!</div>
+                        <div id="p2-feedback-sub" class="text-sm font-extrabold text-slate-200">Jawaban Kamu Benar! (+10)</div>
+                    </div>
+
+                    <!-- Options Grid -->
+                    <div id="p2-options-container" class="grid grid-cols-2 gap-2 mt-auto">
+                        <!-- 4 Option Buttons populated dynamically -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- SCREEN 4: LEVEL RESULT SCOREBOARD -->
+        <div id="screen-level-result" class="hidden w-full max-w-2xl bg-white/95 rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-yellow-400 text-center animate-float">
+            <div class="text-5xl mb-2">🏆</div>
+            <h2 class="text-3xl font-black text-slate-900 mb-1">HASIL LEVEL</h2>
+            <p id="level-result-subtitle" class="text-slate-600 font-bold mb-6 text-sm">Luar biasa! Kalian telah menyelesaikan level ini!</p>
+
+            <div class="bg-slate-100 rounded-2xl p-4 mb-6 border-2 border-slate-300">
+                <table class="w-full text-left font-bold">
+                    <thead>
+                        <tr class="border-b-2 border-slate-300 text-slate-500 text-xs">
+                            <th class="py-2">PEMAIN</th>
+                            <th class="py-2 text-right">SKOR LEVEL INI</th>
+                            <th class="py-2 text-right">TOTAL SKOR</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-base sm:text-lg">
+                        <tr class="border-b border-slate-200">
+                            <td class="py-3 text-red-600 flex items-center gap-2">
+                                <span>👦</span> <span id="lvl-res-p1-name">Pemain 1</span>
+                            </td>
+                            <td class="text-right text-slate-800" id="lvl-res-p1-round">+80</td>
+                            <td class="text-right text-yellow-600 font-black" id="lvl-res-p1-total">⭐ 80</td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 text-blue-600 flex items-center gap-2">
+                                <span>👧</span> <span id="lvl-res-p2-name">Pemain 2</span>
+                            </td>
+                            <td class="text-right text-slate-800" id="lvl-res-p2-round">+70</td>
+                            <td class="text-right text-yellow-600 font-black" id="lvl-res-p2-total">⭐ 70</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button id="btn-next-level" onclick="proceedNextLevel()" class="btn-3d-green text-white text-lg font-black py-3 px-6 rounded-xl flex items-center justify-center gap-2">
+                    ➡️ LANJUT LEVEL SEDANG
+                </button>
+                <button onclick="showScreen('screen-level')" class="btn-3d-blue text-white text-lg font-black py-3 px-6 rounded-xl flex items-center justify-center gap-2">
+                    🏠 PILIH LEVEL
+                </button>
+            </div>
+        </div>
+
+        <!-- SCREEN 5: FINAL GRAND RESULT -->
+        <div id="screen-final-result" class="hidden w-full max-w-3xl bg-white/95 rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-yellow-400 text-center relative overflow-hidden">
+            <div class="text-6xl animate-bounce mb-2">🎉 DUEL SELESAI! 🎉</div>
+            <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-2">JUARA DUEL MATEMATIKA</h2>
+            <p id="final-winner-announcement" class="text-lg font-black text-purple-700 bg-purple-100 py-2 px-4 rounded-full inline-block mb-6 border border-purple-300">
+                Selamat untuk pemenang!
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- P1 Final Score Box -->
+                <div id="p1-final-card" class="bg-red-50 border-4 border-red-400 rounded-2xl p-5 flex flex-col items-center relative">
+                    <div class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center text-3xl text-white mb-2 shadow">👦</div>
+                    <h3 id="p1-final-name" class="text-xl font-black text-red-600 mb-1">PEMAIN 1</h3>
+                    <div class="text-xs text-slate-500 font-bold mb-3">Total Skor Duel</div>
+                    <div class="text-4xl font-black text-yellow-500 bg-white px-6 py-2 rounded-2xl border-2 border-yellow-400 shadow-inner">
+                        ⭐ <span id="p1-final-score">0</span>
+                    </div>
+                </div>
+
+                <!-- P2 Final Score Box -->
+                <div id="p2-final-card" class="bg-blue-50 border-4 border-blue-400 rounded-2xl p-5 flex flex-col items-center relative">
+                    <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-3xl text-white mb-2 shadow">👧</div>
+                    <h3 id="p2-final-name" class="text-xl font-black text-blue-600 mb-1">PEMAIN 2</h3>
+                    <div class="text-xs text-slate-500 font-bold mb-3">Total Skor Duel</div>
+                    <div class="text-4xl font-black text-yellow-500 bg-white px-6 py-2 rounded-2xl border-2 border-yellow-400 shadow-inner">
+                        ⭐ <span id="p2-final-score">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commentator Final Speech -->
+            <div class="bg-yellow-50 border-2 border-yellow-400 rounded-2xl p-4 mb-6 flex items-center gap-3 text-left">
+                <div class="text-4xl">🎤</div>
+                <div class="text-xs sm:text-sm text-slate-700 font-bold">
+                    <span class="text-yellow-700 font-black block">ANIS FUAD (Komentator):</span>
+                    <span id="final-commentator-speech">"Luar biasa sekali anak-anak hebat Kelas 4B! Kalian semua adalah pemenang karena sudah berani mencoba dan belajar Matematika bersama!"</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="goToLevelSelect()" class="btn-3d-yellow text-slate-900 text-xl font-black py-4 px-8 rounded-2xl flex items-center justify-center gap-2">
+                    🔄 MAIN LAGI!
+                </button>
+                <button onclick="showScreen('screen-setup')" class="btn-3d-blue text-white text-xl font-black py-4 px-8 rounded-2xl flex items-center justify-center gap-2">
+                    🏠 MENU UTAMA
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- SOUND EFFECTS SYNTHESIZER (No external audio dependencies) ---
+        let soundEnabled = true;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioCtx();
+            }
+        }
+
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-icon').innerText = soundEnabled ? '🔊' : '🔇';
+            document.getElementById('sound-label').innerText = soundEnabled ? 'Suara: ON' : 'Suara: OFF';
+            if (soundEnabled) speakCommentator("Suara diaktifkan!");
+        }
+
+        function playBeep(freq = 440, duration = 0.1, type = 'sine') {
+            if (!soundEnabled) return;
+            initAudio();
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e){}
+        }
+
+        function playCorrectSound() {
+            if (!soundEnabled) return;
+            initAudio();
+            // Upward fanfare chime
+            setTimeout(() => playBeep(523.25, 0.12, 'triangle'), 0);   // C5
+            setTimeout(() => playBeep(659.25, 0.12, 'triangle'), 100); // E5
+            setTimeout(() => playBeep(783.99, 0.12, 'triangle'), 200); // G5
+            setTimeout(() => playBeep(1046.50, 0.25, 'sine'), 300);   // C6
+        }
+
+        function playWrongSound() {
+            if (!soundEnabled) return;
+            initAudio();
+            // Gentle "Duuut" sound
+            playBeep(180, 0.3, 'sawtooth');
+        }
+
+        function playVictorySound() {
+            if (!soundEnabled) return;
+            initAudio();
+            const notes = [523, 659, 783, 1046, 880, 1046];
+            notes.forEach((freq, idx) => {
+                setTimeout(() => playBeep(freq, 0.2, 'triangle'), idx * 150);
+            });
+        }
+
+        // --- WEB SPEECH SYNTHESIS (ANIS FUAD COMMENTATOR VOICE) ---
+        function speakCommentator(text) {
+            document.getElementById('commentator-text').innerText = `"${text}"`;
+            if (!soundEnabled || !('speechSynthesis' in window)) return;
+
+            window.speechSynthesis.cancel(); // Stop previous
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID';
+            utterance.rate = 1.05;
+            utterance.pitch = 1.2; // Cheerful friendly voice
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // TRIGGER CONFETTI
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        // --- MATHEMATICS QUESTION BANK (KELIPATAN & FAKTOR KELAS 4 SD) ---
+        // Each level provides distinct 10-question pools for Player 1 and Player 2
+
+        const questionBank = {
+            easy: {
+                p1: [
+                    { q: "Kelipatan ke-5 dari bilangan 3 adalah ....", options: ["12", "15", "18", "10"], ans: "15" },
+                    { q: "Bilangan berikut yang merupakan kelipatan dari 5 adalah ....", options: ["12", "18", "25", "32"], ans: "25" },
+                    { q: "Semua faktor dari bilangan 12 adalah ....", options: ["1, 2, 3, 4, 6, 12", "1, 2, 4, 8, 12", "2, 4, 6, 12", "1, 3, 6, 12"], ans: "1, 2, 3, 4, 6, 12" },
+                    { q: "Bilangan yang merupakan faktor dari 18 adalah ....", options: ["5", "7", "6", "8"], ans: "6" },
+                    { q: "Kelipatan 6 setelah 12 adalah ....", options: ["14", "16", "18", "24"], ans: "18" },
+                    { q: "Semua faktor dari 10 adalah ....", options: ["1, 2, 5, 10", "1, 3, 5, 10", "2, 4, 5, 10", "1, 2, 10"], ans: "1, 2, 5, 10" },
+                    { q: "Apakah 24 merupakan kelipatan dari 4?", options: ["Ya", "Bukan", "Ragu-ragu", "Tidak Tahu"], ans: "Ya" },
+                    { q: "Apakah 3 merupakan faktor dari 15?", options: ["Ya", "Bukan", "Hanya Kadang", "Salah"], ans: "Ya" },
+                    { q: "Tiga kelipatan pertama dari 2 adalah ....", options: ["2, 4, 6", "2, 3, 4", "1, 2, 3", "2, 5, 7"], ans: "2, 4, 6" },
+                    { q: "Manakah di bawah ini yang merupakan kelipatan dari 7?", options: ["14", "15", "20", "22"], ans: "14" }
+                ],
+                p2: [
+                    { q: "Kelipatan ke-4 dari bilangan 7 adalah ....", options: ["21", "28", "35", "14"], ans: "28" },
+                    { q: "Bilangan berikut yang merupakan kelipatan dari 4 adalah ....", options: ["14", "18", "20", "22"], ans: "20" },
+                    { q: "Semua faktor dari bilangan 16 adalah ....", options: ["1, 2, 4, 8, 16", "1, 3, 4, 8, 16", "2, 4, 6, 16", "1, 2, 8, 16"], ans: "1, 2, 4, 8, 16" },
+                    { q: "Bilangan yang merupakan faktor dari 20 adalah ....", options: ["3", "5", "6", "7"], ans: "5" },
+                    { q: "Kelipatan 8 setelah 16 adalah ....", options: ["20", "22", "24", "32"], ans: "24" },
+                    { q: "Semua faktor dari 15 adalah ....", options: ["1, 3, 5, 15", "1, 2, 5, 15", "3, 5, 10, 15", "1, 5, 15"], ans: "1, 3, 5, 15" },
+                    { q: "Apakah 30 merupakan kelipatan dari 6?", options: ["Ya", "Bukan", "Mungkin", "Salah"], ans: "Ya" },
+                    { q: "Apakah 4 merupakan faktor dari 18?", options: ["Bukan", "Ya", "Benar", "Pasti"], ans: "Bukan" },
+                    { q: "Tiga kelipatan pertama dari 5 adalah ....", options: ["5, 10, 15", "5, 6, 7", "1, 5, 10", "5, 15, 20"], ans: "5, 10, 15" },
+                    { q: "Manakah di bawah ini yang merupakan kelipatan dari 9?", options: ["27", "28", "30", "32"], ans: "27" }
+                ]
+            },
+            medium: {
+                p1: [
+                    { q: "Manakah bilangan berikut yang merupakan kelipatan dari 8?", options: ["32", "30", "28", "26"], ans: "32" },
+                    { q: "Bilangan berikut yang BUKAN merupakan kelipatan dari 6 adalah ....", options: ["12", "18", "25", "30"], ans: "25" },
+                    { q: "Faktor dari 24 yang lebih besar dari 10 adalah ....", options: ["12 dan 24", "12 dan 18", "15 dan 24", "11 dan 12"], ans: "12 dan 24" },
+                    { q: "Budi membeli pensil dalam kotak isi 6. Banyak pensil yang MUNGKIN dibeli Budi adalah ....", options: ["18 pensil", "20 pensil", "22 pensil", "25 pensil"], ans: "18 pensil" },
+                    { q: "Kelipatan dari 9 yang terletak di antara 20 dan 40 adalah ....", options: ["27 dan 36", "21 dan 30", "25 dan 35", "27 dan 35"], ans: "27 dan 36" },
+                    { q: "Jumlah semua faktor dari bilangan 6 adalah .... (Faktor: 1, 2, 3, 6)", options: ["12", "10", "11", "15"], ans: "12" },
+                    { q: "Bilangan mana yang memiliki faktor terbanyak?", options: ["12", "7", "11", "5"], ans: "12" },
+                    { q: "Siti menghitung kelipatan 4. Bilangan ke-7 yang ia sebutkan adalah ....", options: ["28", "24", "32", "20"], ans: "28" },
+                    { q: "Faktor persekutuan paling sederhana dari 6 dan 9 adalah ....", options: ["1 dan 3", "1 dan 2", "3 dan 6", "1 dan 9"], ans: "1 dan 3" },
+                    { q: "Manakah pasangan bilangan yang merupakan kelipatan 10?", options: ["30 dan 50", "25 dan 35", "10 dan 25", "40 dan 45"], ans: "30 dan 50" }
+                ],
+                p2: [
+                    { q: "Manakah bilangan berikut yang merupakan faktor dari 36?", options: ["9", "7", "8", "11"], ans: "9" },
+                    { q: "Bilangan berikut yang BUKAN merupakan kelipatan dari 7 adalah ....", options: ["21", "28", "32", "35"], ans: "32" },
+                    { q: "Faktor dari 30 yang merupakan bilangan ganjil adalah ....", options: ["1, 3, 5, 15", "1, 2, 3, 5", "3, 5, 10", "5, 15, 30"], ans: "1, 3, 5, 15" },
+                    { q: "Ani mengemas kue dalam piring isi 8. Banyak kue yang MUNGKIN dikemas Ani adalah ....", options: ["32 kue", "30 kue", "28 kue", "22 kue"], ans: "32 kue" },
+                    { q: "Kelipatan dari 7 yang terletak di antara 15 dan 30 adalah ....", options: ["21 dan 28", "20 dan 25", "18 dan 27", "21 dan 29"], ans: "21 dan 28" },
+                    { q: "Jumlah semua faktor dari bilangan 8 adalah .... (Faktor: 1, 2, 4, 8)", options: ["15", "12", "14", "16"], ans: "15" },
+                    { q: "Bilangan mana yang memiliki faktor terbanyak?", options: ["18", "13", "17", "19"], ans: "18" },
+                    { q: "Eko menghitung kelipatan 5. Bilangan ke-6 yang ia sebutkan adalah ....", options: ["30", "25", "35", "20"], ans: "30" },
+                    { q: "Faktor persekutuan paling sederhana dari 8 dan 12 adalah ....", options: ["1, 2, 4", "1, 3, 4", "2, 4, 8", "1, 2, 6"], ans: "1, 2, 4" },
+                    { q: "Manakah pasangan bilangan yang merupakan kelipatan 12?", options: ["24 dan 36", "20 dan 30", "12 dan 20", "24 dan 40"], ans: "24 dan 36" }
+                ]
+            },
+            hard: {
+                p1: [
+                    { q: "Rina menghitung kelipatan 6 dan Budi menghitung kelipatan 8. Bilangan terkecil yang sama-sama mereka sebutkan adalah ....", options: ["24", "16", "48", "32"], ans: "24" },
+                    { q: "Lampu A menyala setiap 4 detik, Lampu B setiap 6 detik. Lampu akan menyala bersamaan pada detik ke-....", options: ["12", "10", "16", "24"], ans: "12" },
+                    { q: "Dari bilangan 24, 30, 36, dan 42, manakah yang BUKAN kelipatan 6?", options: ["Semua kelipatan 6", "24 saja", "30 saja", "42 saja"], ans: "Semua kelipatan 6" },
+                    { q: "Faktor persekutuan dari bilangan 12 dan 18 adalah ....", options: ["1, 2, 3, 6", "1, 2, 4, 6", "1, 3, 6, 9", "2, 3, 6, 12"], ans: "1, 2, 3, 6" },
+                    { q: "Kelipatan persekutuan pertama dari 3 dan 5 adalah ....", options: ["15", "10", "20", "30"], ans: "15" },
+                    { q: "Ibu memiliki 12 apel dan 18 jeruk. Buah akan dimasukkan ke dalam plastik dengan jumlah sama. Berapa plastik paling banyak?", options: ["6", "4", "8", "3"], ans: "6" },
+                    { q: "Bilangan antara 20 dan 50 yang merupakan kelipatan 4 sekaligus kelipatan 6 adalah ....", options: ["24, 36, 48", "24, 32, 40", "30, 36, 42", "24, 30, 36"], ans: "24, 36, 48" },
+                    { q: "Faktor terbesar dari 40 yang kurang dari 40 adalah ....", options: ["20", "10", "25", "30"], ans: "20" },
+                    { q: "Dua kelipatan persekutuan pertama dari 4 dan 6 adalah ....", options: ["12 dan 24", "8 dan 12", "12 dan 18", "16 dan 24"], ans: "12 dan 24" },
+                    { q: "Bilangan ganjil yang merupakan faktor dari 45 dan lebih dari 10 adalah ....", options: ["15 dan 45", "15 dan 25", "9 dan 15", "15 dan 30"], ans: "15 dan 45" }
+                ],
+                p2: [
+                    { q: "Dari bilangan 24, 30, 36, dan 42, bilangan manakah yang memiliki faktor 9?", options: ["36", "24", "30", "42"], ans: "36" },
+                    { q: "Bus Merah lewat setiap 5 menit, Bus Biru lewat setiap 10 menit. Kedua bus lewat bersamaan setiap .... menit.", options: ["10", "15", "20", "25"], ans: "10" },
+                    { q: "Kelipatan persekutuan dari 2 dan 7 yang kurang dari 30 adalah ....", options: ["14 dan 28", "7 dan 14", "14 dan 21", "21 dan 28"], ans: "14 dan 28" },
+                    { q: "Faktor persekutuan dari bilangan 16 dan 24 adalah ....", options: ["1, 2, 4, 8", "1, 2, 4, 6", "1, 3, 8, 16", "2, 4, 8, 12"], ans: "1, 2, 4, 8" },
+                    { q: "Kelipatan persekutuan pertama dari 4 dan 5 adalah ....", options: ["20", "15", "25", "30"], ans: "20" },
+                    { q: "Pak Tani memanen 20 mangga dan 30 alpukat. Buah dikemas ke dalam keranjang sama banyak. Keranjang terbanyak adalah ....", options: ["10", "5", "15", "8"], ans: "10" },
+                    { q: "Bilangan antara 10 dan 40 yang merupakan kelipatan 3 sekaligus kelipatan 5 adalah ....", options: ["15 dan 30", "15 dan 25", "20 dan 30", "15 dan 35"], ans: "15 dan 30" },
+                    { q: "Faktor terbesar dari 50 yang kurang dari 50 adalah ....", options: ["25", "10", "20", "30"], ans: "25" },
+                    { q: "Dua kelipatan persekutuan pertama dari 3 dan 4 adalah ....", options: ["12 dan 24", "6 dan 12", "12 dan 18", "12 dan 36"], ans: "12 dan 24" },
+                    { q: "Bilangan genap yang merupakan faktor dari 36 dan lebih dari 10 adalah ....", options: ["12, 18, 36", "12, 16, 36", "14, 18, 36", "12, 20, 36"], ans: "12, 18, 36" }
+                ]
+            }
+        };
+
+        // --- GAME STATE VARIABLES ---
+        let currentLevel = 'easy'; // 'easy', 'medium', 'hard'
+        let currentQuestionIdx = 0; // 0 to 9
+        let p1Name = "Budi";
+        let p2Name = "Siti";
+        let p1TotalScore = 0;
+        let p2TotalScore = 0;
+        let p1LevelScore = 0;
+        let p2LevelScore = 0;
+
+        let p1Answered = false;
+        let p2Answered = false;
+
+        let timerInterval = null;
+        let timeLeft = 20;
+
+        // Shuffle helper array
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Screen Switcher
+        function showScreen(screenId) {
+            ['screen-setup', 'screen-level', 'screen-game', 'screen-level-result', 'screen-final-result'].forEach(id => {
+                const el = document.getElementById(id);
+                if (id === screenId) el.classList.remove('hidden');
+                else el.classList.add('hidden');
+            });
+        }
+
+        function goToLevelSelect() {
+            p1Name = document.getElementById('p1-name-input').value.trim() || "Pemain 1";
+            p2Name = document.getElementById('p2-name-input').value.trim() || "Pemain 2";
+            showScreen('screen-level');
+            speakCommentator(`Halo ${p1Name} dan ${p2Name}! Silakan pilih tingkat kesulitan duel matematika!`);
+        }
+
+        // Start Match Level
+        function startMatch(level) {
+            currentLevel = level;
+            currentQuestionIdx = 0;
+            p1LevelScore = 0;
+            p2LevelScore = 0;
+
+            document.getElementById('p1-display-name').innerText = p1Name.toUpperCase();
+            document.getElementById('p2-display-name').innerText = p2Name.toUpperCase();
+
+            // Set badge label
+            const badge = document.getElementById('game-level-badge');
+            if (level === 'easy') {
+                badge.innerText = "LEVEL MUDAH";
+                badge.className = "bg-green-500 text-white text-xs font-black px-2.5 py-1 rounded-full uppercase";
+            } else if (level === 'medium') {
+                badge.innerText = "LEVEL SEDANG";
+                badge.className = "bg-blue-500 text-white text-xs font-black px-2.5 py-1 rounded-full uppercase";
+            } else {
+                badge.innerText = "LEVEL SULIT";
+                badge.className = "bg-red-500 text-white text-xs font-black px-2.5 py-1 rounded-full uppercase";
+            }
+
+            showScreen('screen-game');
+            speakCommentator(`Level ${badge.innerText} dimulai! Konsentrasi dan jawab dengan cepat!`);
+            loadQuestionRound();
+        }
+
+        // Load Question for both players
+        function loadQuestionRound() {
+            p1Answered = false;
+            p2Answered = false;
+
+            // Reset Feedback UI
+            document.getElementById('p1-feedback').classList.add('hidden');
+            document.getElementById('p2-feedback').classList.add('hidden');
+
+            document.getElementById('p1-score').innerText = p1TotalScore + p1LevelScore;
+            document.getElementById('p2-score').innerText = p2TotalScore + p2LevelScore;
+            document.getElementById('game-soal-num').innerText = `Soal ${currentQuestionIdx + 1} / 10`;
+
+            const p1q = questionBank[currentLevel].p1[currentQuestionIdx];
+            const p2q = questionBank[currentLevel].p2[currentQuestionIdx];
+
+            // Render Questions
+            document.getElementById('p1-question-text').innerText = p1q.q;
+            document.getElementById('p2-question-text').innerText = p2q.q;
+
+            // Render Options for Player 1
+            const p1Container = document.getElementById('p1-options-container');
+            p1Container.innerHTML = '';
+            const p1ShuffledOpts = shuffleArray(p1q.options);
+            p1ShuffledOpts.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "btn-3d-red text-white font-black text-sm sm:text-base py-3 px-2 rounded-xl shadow-md border-2 border-red-300 active:scale-95 transition flex items-center justify-center text-center leading-tight";
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(1, opt, p1q.ans, btn);
+                p1Container.appendChild(btn);
+            });
+
+            // Render Options for Player 2
+            const p2Container = document.getElementById('p2-options-container');
+            p2Container.innerHTML = '';
+            const p2ShuffledOpts = shuffleArray(p2q.options);
+            p2ShuffledOpts.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "btn-3d-blue text-white font-black text-sm sm:text-base py-3 px-2 rounded-xl shadow-md border-2 border-blue-300 active:scale-95 transition flex items-center justify-center text-center leading-tight";
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(2, opt, p2q.ans, btn);
+                p2Container.appendChild(btn);
+            });
+
+            // Restart 20-Second Timer
+            clearInterval(timerInterval);
+            timeLeft = 20;
+            document.getElementById('central-timer').innerText = timeLeft;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('central-timer').innerText = timeLeft;
+
+                if (timeLeft <= 5 && timeLeft > 0) {
+                    playBeep(800, 0.05, 'square');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        // Handle Player Answer Click
+        function handleAnswer(player, selectedOpt, correctOpt, btnEl) {
+            if (player === 1 && p1Answered) return;
+            if (player === 2 && p2Answered) return;
+
+            const isCorrect = (selectedOpt === correctOpt);
+            const feedbackEl = document.getElementById(player === 1 ? 'p1-feedback' : 'p2-feedback');
+            const emojiEl = document.getElementById(player === 1 ? 'p1-feedback-emoji' : 'p2-feedback-emoji');
+            const titleEl = document.getElementById(player === 1 ? 'p1-feedback-title' : 'p2-feedback-title');
+            const subEl = document.getElementById(player === 1 ? 'p1-feedback-sub' : 'p2-feedback-sub');
+
+            if (player === 1) p1Answered = true;
+            if (player === 2) p2Answered = true;
+
+            if (isCorrect) {
+                if (player === 1) p1LevelScore += 10;
+                if (player === 2) p2LevelScore += 10;
+
+                document.getElementById(player === 1 ? 'p1-score' : 'p2-score').innerText = (player === 1 ? p1TotalScore + p1LevelScore : p2TotalScore + p2LevelScore);
+
+                playCorrectSound();
+                triggerConfetti();
+
+                emojiEl.innerText = "🎉";
+                titleEl.innerText = "WAW..! HEBAT..!";
+                titleEl.className = "text-3xl font-black text-yellow-300 mb-1";
+                subEl.innerText = "Jawaban Kamu Benar! ⭐ +10 POIN";
+
+                speakCommentator(`Luar biasa! ${player === 1 ? p1Name : p2Name} menjawab benar!`);
+            } else {
+                playWrongSound();
+
+                emojiEl.innerText = "😊";
+                titleEl.innerText = "Coba lagi!";
+                titleEl.className = "text-3xl font-black text-cyan-300 mb-1";
+                subEl.innerText = "Tetap semangat, belajar terus!";
+            }
+
+            feedbackEl.classList.remove('hidden');
+
+            // If both answered, advance to next question
+            if (p1Answered && p2Answered) {
+                clearInterval(timerInterval);
+                setTimeout(nextQuestionRound, 1500);
+            }
+        }
+
+        function handleTimeOut() {
+            // Show timeout feedback for unanswered players
+            if (!p1Answered) {
+                const fb1 = document.getElementById('p1-feedback');
+                document.getElementById('p1-feedback-emoji').innerText = "⏰";
+                document.getElementById('p1-feedback-title').innerText = "Waktu Habis!";
+                document.getElementById('p1-feedback-sub').innerText = "Ayo lebih cepat di soal berikutnya!";
+                fb1.classList.remove('hidden');
+            }
+            if (!p2Answered) {
+                const fb2 = document.getElementById('p2-feedback');
+                document.getElementById('p2-feedback-emoji').innerText = "⏰";
+                document.getElementById('p2-feedback-title').innerText = "Waktu Habis!";
+                document.getElementById('p2-feedback-sub').innerText = "Ayo lebih cepat di soal berikutnya!";
+                fb2.classList.remove('hidden');
+            }
+
+            speakCommentator("Waktu habis! Ayo kita lanjut ke soal berikutnya!");
+            setTimeout(nextQuestionRound, 1800);
+        }
+
+        function nextQuestionRound() {
+            currentQuestionIdx++;
+
+            if (currentQuestionIdx >= 10) {
+                // Finish Level
+                finishLevel();
+            } else {
+                loadQuestionRound();
+            }
+        }
+
+        // Finish current 10-question level
+        function finishLevel() {
+            clearInterval(timerInterval);
+            p1TotalScore += p1LevelScore;
+            p2TotalScore += p2LevelScore;
+
+            document.getElementById('lvl-res-p1-name').innerText = p1Name;
+            document.getElementById('lvl-res-p2-name').innerText = p2Name;
+            document.getElementById('lvl-res-p1-round').innerText = `+${p1LevelScore}`;
+            document.getElementById('lvl-res-p2-round').innerText = `+${p2LevelScore}`;
+            document.getElementById('lvl-res-p1-total').innerText = `⭐ ${p1TotalScore}`;
+            document.getElementById('lvl-res-p2-total').innerText = `⭐ ${p2TotalScore}`;
+
+            const nextBtn = document.getElementById('btn-next-level');
+            const subtitle = document.getElementById('level-result-subtitle');
+
+            if (currentLevel === 'easy') {
+                subtitle.innerText = "Luar biasa! Kalian sudah menyelesaikan Level Mudah!";
+                nextBtn.innerText = "➡️ LANJUT LEVEL SEDANG";
+                nextBtn.onclick = () => startMatch('medium');
+                nextBtn.classList.remove('hidden');
+            } else if (currentLevel === 'medium') {
+                subtitle.innerText = "Hebat sekali! Level Sedang berhasil ditaklukkan!";
+                nextBtn.innerText = "➡️ LANJUT LEVEL SULIT";
+                nextBtn.onclick = () => startMatch('hard');
+                nextBtn.classList.remove('hidden');
+            } else {
+                subtitle.innerText = "Sempurna! Semua level telah selesai!";
+                nextBtn.innerText = "🏆 LIHAT HASIL AKHIR DUEL";
+                nextBtn.onclick = showFinalResult;
+            }
+
+            playVictorySound();
+            triggerConfetti();
+            showScreen('screen-level-result');
+            speakCommentator(`Luar biasa! Pertandingan level ${currentLevel} selesai dengan sangat seru!`);
+        }
+
+        function showFinalResult() {
+            document.getElementById('p1-final-name').innerText = p1Name.toUpperCase();
+            document.getElementById('p2-final-name').innerText = p2Name.toUpperCase();
+            document.getElementById('p1-final-score').innerText = p1TotalScore;
+            document.getElementById('p2-final-score').innerText = p2TotalScore;
+
+            const winnerAnnounce = document.getElementById('final-winner-announcement');
+            const speech = document.getElementById('final-commentator-speech');
+
+            if (p1TotalScore > p2TotalScore) {
+                winnerAnnounce.innerText = `🏆 PEMENANG DUEL: ${p1Name.toUpperCase()}!`;
+                speech.innerText = `"Selamat untuk ${p1Name}! Kamu tampil sangat cepat dan tepat! Dan ${p2Name} juga luar biasa telah memberikan perlawanan yang sengit!"`;
+            } else if (p2TotalScore > p1TotalScore) {
+                winnerAnnounce.innerText = `🏆 PEMENANG DUEL: ${p2Name.toUpperCase()}!`;
+                speech.innerText = `"Selamat untuk ${p2Name}! Kamu hebat sekali! ${p1Name} juga sangat luar biasa, terus semangat belajar ya!"`;
+            } else {
+                winnerAnnounce.innerText = `🤝 HASIL DUEL: SERI / SAMA KUAT!`;
+                speech.innerText = `"Luar biasa! Skor kalian sama kuat! Keduanya adalah juara matematika Kelas 4!"`;
+            }
+
+            playVictorySound();
+            triggerConfetti();
+            showScreen('screen-final-result');
+            speakCommentator(`Selamat anak-anak! Pertandingan Duel Matematika selesai dengan hasil yang membanggakan!`);
+        }
+
+        function confirmExit() {
+            if (confirm("Apakah kamu yakin ingin kembali ke menu awal? Skor duel akan direset.")) {
+                clearInterval(timerInterval);
+                p1TotalScore = 0;
+                p2TotalScore = 0;
+                showScreen('screen-level');
+            }
+        }
+
+        // Initialize Speech and startup sound trigger on window load
+        window.onload = function() {
+            speakCommentator("Halo, anak-anak! Saya Anis Fuad, komentator Kelas 4B. Selamat datang di Duel Matematika! Siap bertanding?");
+        };
+    </script>
+</body>
+</html>
